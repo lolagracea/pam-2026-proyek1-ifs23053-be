@@ -1,0 +1,131 @@
+### Global Variabel
+#@BaseUrl = https://pam-2026-p5-jobstreet-be.delcom.org:8080
+@BaseUrl = http://127.0.0.1:8000
+
+### ---------------------------------------
+## Auth
+### ---------------------------------------
+
+### Melakukan pendaftaran
+# @name PostRegister
+POST {{BaseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Tester",
+  "username": "tester",
+  "password": "tester"
+}
+
+### Masuk ke layanan
+# @name PostLogin
+POST {{BaseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "tester",
+  "password": "tester"
+}
+
+> {%
+    client.global.set("authToken", response.body.data.authToken);
+    client.global.set("refreshToken", response.body.data.refreshToken);
+%}
+
+### Refresh Token
+# @name PostRefreshToken
+POST {{BaseUrl}}/auth/refresh-token
+Content-Type: application/json
+
+{
+  "authToken": "{{authToken}}",
+  "refreshToken": "{{refreshToken}}"
+}
+
+> {%
+    client.global.set("authToken", response.body.data.authToken);
+    client.global.set("refreshToken", response.body.data.refreshToken);
+%}
+
+### Logout
+# @name PostLogout
+POST {{BaseUrl}}/auth/logout
+Content-Type: application/json
+
+{
+  "authToken": "{{authToken}}"
+}
+
+### ---------------------------------------
+## Jobs
+### ---------------------------------------
+
+### Menambahkan lowongan
+# @name PostJob
+POST {{BaseUrl}}/jobs
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "Software Engineer",
+  "description": "Develop and maintain software applications.",
+  "company": "Tech Corp",
+  "location": "Jakarta",
+  "salary": "Rp 10.000.000 - 15.000.000"
+}
+
+> {%
+    client.global.set("jobId", response.body.data.jobId);
+%}
+
+### Mengambil semua lowongan
+# @name GetJobs
+GET {{BaseUrl}}/jobs?search=
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+### Mengambil lowongan berdasarkan id
+# @name GetJobById
+GET {{BaseUrl}}/jobs/{{jobId}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+### Mengubah lowongan
+# @name PutJob
+PUT {{BaseUrl}}/jobs/{{jobId}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "Senior Software Engineer",
+  "description": "Lead development team.",
+  "company": "Tech Corp",
+  "location": "Bandung",
+  "salary": "Rp 15.000.000 - 20.000.000",
+  "isActive": true
+}
+
+### Mengubah logo lowongan
+# @name PutJobLogo
+PUT {{BaseUrl}}/jobs/{{jobId}}/logo
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="company.png"
+Content-Type: image/png
+
+< ./uploads/examples/company.png
+--WebAppBoundary--
+
+### Mengambil logo lowongan
+# @name GetJobLogo
+GET {{BaseUrl}}/images/jobs/{{jobId}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+### Menghapus lowongan
+# @name DeleteJob
+DELETE {{BaseUrl}}/jobs/{{jobId}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
