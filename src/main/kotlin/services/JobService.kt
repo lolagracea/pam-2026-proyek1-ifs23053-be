@@ -14,6 +14,7 @@ import kotlinx.coroutines.withContext
 import org.delcom.data.AppException
 import org.delcom.data.DataResponse
 import org.delcom.data.JobRequest
+import org.delcom.data.ResponseJobAdd   // import tambahan
 import org.delcom.helpers.ServiceHelper
 import org.delcom.helpers.ValidatorHelper
 import org.delcom.repositories.IJobRepository
@@ -29,7 +30,13 @@ class JobService(
     // Mengambil semua daftar lowongan (publik)
     suspend fun getAll(call: ApplicationCall) {
         val search = call.request.queryParameters["search"] ?: ""
-        val jobs = jobRepo.getAll(search)
+        val isActive = call.request.queryParameters["isActive"]?.toBooleanStrictOrNull()
+        val location = call.request.queryParameters["location"]
+        val company = call.request.queryParameters["company"]
+        val offset = call.request.queryParameters["offset"]?.toIntOrNull() ?: 0
+        val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 10
+
+        val jobs = jobRepo.getAll(search, isActive, location, company, offset, limit)
         val response = DataResponse(
             "success",
             "Berhasil mengambil daftar lowongan kerja",
@@ -67,7 +74,7 @@ class JobService(
         val response = DataResponse(
             "success",
             "Berhasil menambahkan lowongan kerja",
-            mapOf("jobId" to jobId)
+            ResponseJobAdd(jobId)   // menggunakan data class khusus
         )
         call.respond(response)
     }

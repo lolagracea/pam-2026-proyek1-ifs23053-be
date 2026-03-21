@@ -1,10 +1,11 @@
--- Membuat tabel users
+-- Membuat tabel users dengan tambahan kolom bio
 CREATE TABLE IF NOT EXISTS users (
                                      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) NOT NULL,
     username VARCHAR(50) NOT NULL,
     password VARCHAR(255) NOT NULL,
     photo VARCHAR(255) NULL,
+    bio TEXT NULL,                         -- kolom baru untuk bio
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL
     );
@@ -18,7 +19,7 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
     created_at TIMESTAMP NOT NULL
     );
 
--- Membuat tabel jobs
+-- Membuat tabel jobs dengan is_active
 CREATE TABLE IF NOT EXISTS jobs (
                                     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL,
@@ -27,7 +28,7 @@ CREATE TABLE IF NOT EXISTS jobs (
     company VARCHAR(200) NOT NULL,
     location VARCHAR(200) NOT NULL,
     salary VARCHAR(100) NULL,
-    is_active BOOLEAN NOT NULL DEFAULT true,
+    is_active BOOLEAN NOT NULL DEFAULT true,   -- kolom status aktif
     logo TEXT NULL,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL

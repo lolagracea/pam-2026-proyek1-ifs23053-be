@@ -39,21 +39,16 @@ class UserRepository(private val baseUrl: String) : IUserRepository {
     }
 
     override suspend fun update(id: String, newUser: User): Boolean = suspendTransaction {
-        val userDAO = UserDAO
-            .find { UserTable.id eq UUID.fromString(id) }
-            .limit(1)
-            .firstOrNull()
-
+        val userDAO = UserDAO.find { UserTable.id eq UUID.fromString(id) }.limit(1).firstOrNull()
         if (userDAO != null) {
             userDAO.name = newUser.name
             userDAO.username = newUser.username
             userDAO.password = newUser.password
             userDAO.photo = newUser.photo
+            userDAO.bio = newUser.bio                     // ← tambahan
             userDAO.updatedAt = newUser.updatedAt
             true
-        } else {
-            false
-        }
+        } else false
     }
 
     override suspend fun delete(id: String): Boolean = suspendTransaction {

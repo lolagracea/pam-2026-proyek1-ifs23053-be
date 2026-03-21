@@ -20,6 +20,7 @@ fun userDAOToModel(dao: UserDAO, baseUrl: String) = User(
     password = dao.password,
     photo = dao.photo,
     urlPhoto = buildImageUrl(baseUrl, dao.photo ?: "/uploads/defaults/user.png"),
+    bio = dao.bio,                        // ← tambahan
     createdAt = dao.createdAt,
     updatedAt = dao.updatedAt
 )
@@ -56,3 +57,4 @@ fun buildImageUrl(baseUrl: String, pathGambar: String): String {
     val relativePath = pathGambar.removePrefix("uploads/")
     return "$baseUrl/static/$relativePath"
 }
+

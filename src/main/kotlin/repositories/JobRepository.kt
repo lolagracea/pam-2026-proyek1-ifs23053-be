@@ -16,19 +16,40 @@ import java.util.*
 
 class JobRepository(private val baseUrl: String) : IJobRepository {
 
-    override suspend fun getAll(search: String): List<Job> = suspendTransaction {
-        if (search.isBlank()) {
-            JobDAO.all()
-                .map { jobDAOToModel(it, baseUrl) }
-        } else {
+    override suspend fun getAll(
+        search: String,
+        isActive: Boolean?,
+        location: String?,
+        company: String?,
+        offset: Int,
+        limit: Int
+    ): List<Job> = suspendTransaction {
+        // Mulai dengan query dasar (semua data)
+        var query = JobTable.selectAll()
+
+        // Terapkan filter berdasarkan parameter
+        if (isActive != null) {
+            query = query.andWhere { JobTable.isActive eq isActive }
+        }
+        if (!location.isNullOrBlank()) {
+            query = query.andWhere { JobTable.location.lowerCase() like "%${location.lowercase()}%" }
+        }
+        if (!company.isNullOrBlank()) {
+            query = query.andWhere { JobTable.company.lowerCase() like "%${company.lowercase()}%" }
+        }
+        if (search.isNotBlank()) {
             val keyword = "%${search.lowercase()}%"
-            JobDAO.find {
+            query = query.andWhere {
                 (JobTable.title.lowerCase() like keyword) or
                         (JobTable.company.lowerCase() like keyword) or
                         (JobTable.location.lowerCase() like keyword)
             }
-                .map { jobDAOToModel(it, baseUrl) }
         }
+
+        // Urutkan dan batasi untuk pagination
+        query.orderBy(JobTable.createdAt to SortOrder.DESC)
+            .limit(limit, offset.toLong())
+            .map { jobDAOToModel(JobDAO.wrapRow(it), baseUrl) }
     }
 
     override suspend fun getById(jobId: String): Job? = suspendTransaction {

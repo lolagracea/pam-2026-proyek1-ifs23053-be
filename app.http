@@ -57,8 +57,70 @@ Content-Type: application/json
 }
 
 ### ---------------------------------------
+## Users
+### ---------------------------------------
+
+### Mengambil informasi akun
+# @name GetUserMe
+GET {{BaseUrl}}/users/me
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+> {%
+    client.global.set("userId", response.body.data.user.id);
+%}
+
+### Mengubah informasi akun
+# @name PutUserMe
+PUT {{BaseUrl}}/users/me
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Tester Update",
+  "username": "tester",
+  "bio": "Saya adalah seorang pengembang aplikasi."
+}
+
+### Mengubah kata sandi akun
+# @name PutUserMePassword
+PUT {{BaseUrl}}/users/me/password
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "newPassword": "tester",
+  "password": "tester"
+}
+
+### Mengubah photo profile
+# @name PutUserMePhoto
+PUT {{BaseUrl}}/users/me/photo
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="me.png"
+Content-Type: image/png
+
+< ./uploads/examples/me.png
+--WebAppBoundary--
+
+### Mengambil photo profile
+# @name GetMyPhoto
+GET {{BaseUrl}}/images/users/{{userId}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+### ---------------------------------------
 ## Jobs
 ### ---------------------------------------
+
+### Mengambil semua lowongan (dengan filter dan pagination)
+# @name GetJobs
+GET {{BaseUrl}}/jobs?search=&isActive=true&offset=0&limit=10
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
 
 ### Menambahkan lowongan
 # @name PostJob
@@ -71,18 +133,13 @@ Content-Type: application/json
   "description": "Develop and maintain software applications.",
   "company": "Tech Corp",
   "location": "Jakarta",
-  "salary": "Rp 10.000.000 - 15.000.000"
+  "salary": "Rp 10.000.000 - 15.000.000",
+  "isActive": true
 }
 
 > {%
     client.global.set("jobId", response.body.data.jobId);
 %}
-
-### Mengambil semua lowongan
-# @name GetJobs
-GET {{BaseUrl}}/jobs?search=
-Authorization: Bearer {{authToken}}
-Content-Type: application/json
 
 ### Mengambil lowongan berdasarkan id
 # @name GetJobById
