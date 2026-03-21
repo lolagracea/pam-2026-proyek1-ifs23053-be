@@ -4,12 +4,13 @@ import org.delcom.entities.Job
 
 interface IJobRepository {
     suspend fun getAll(
-        search: String = "",
-        isActive: Boolean? = null,
-        location: String? = null,
-        company: String? = null,
-        offset: Int = 0,
-        limit: Int = 10
+        userId: String?,
+        search: String,
+        isActive: Boolean?,
+        location: String?,
+        company: String?,
+        offset: Int,
+        limit: Int
     ): List<Job>
 
     suspend fun getById(jobId: String): Job?

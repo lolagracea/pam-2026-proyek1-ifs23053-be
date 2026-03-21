@@ -2,10 +2,10 @@ package org.delcom.repositories
 
 import org.delcom.dao.JobDAO
 import org.delcom.entities.Job
-import org.delcom.helpers.suspendTransaction
 import org.delcom.helpers.jobDAOToModel
+import org.delcom.helpers.suspendTransaction
 import org.delcom.tables.JobTable
-import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 import org.jetbrains.exposed.sql.and
@@ -17,6 +17,7 @@ import java.util.*
 class JobRepository(private val baseUrl: String) : IJobRepository {
 
     override suspend fun getAll(
+        userId: String?,
         search: String,
         isActive: Boolean?,
         location: String?,
@@ -24,32 +25,46 @@ class JobRepository(private val baseUrl: String) : IJobRepository {
         offset: Int,
         limit: Int
     ): List<Job> = suspendTransaction {
-        // Mulai dengan query dasar (semua data)
-        var query = JobTable.selectAll()
+        // Build dynamic conditions
+        val conditions = mutableListOf<Op<Boolean>>()
 
-        // Terapkan filter berdasarkan parameter
+        if (userId != null) {
+            conditions.add(JobTable.userId eq UUID.fromString(userId))
+        }
         if (isActive != null) {
-            query = query.andWhere { JobTable.isActive eq isActive }
+            conditions.add(JobTable.isActive eq isActive)
         }
         if (!location.isNullOrBlank()) {
-            query = query.andWhere { JobTable.location.lowerCase() like "%${location.lowercase()}%" }
+            conditions.add(JobTable.location.lowerCase() like "%${location.lowercase()}%")
         }
         if (!company.isNullOrBlank()) {
-            query = query.andWhere { JobTable.company.lowerCase() like "%${company.lowercase()}%" }
+            conditions.add(JobTable.company.lowerCase() like "%${company.lowercase()}%")
         }
         if (search.isNotBlank()) {
             val keyword = "%${search.lowercase()}%"
-            query = query.andWhere {
+            conditions.add(
                 (JobTable.title.lowerCase() like keyword) or
                         (JobTable.company.lowerCase() like keyword) or
                         (JobTable.location.lowerCase() like keyword)
-            }
+            )
         }
 
-        // Urutkan dan batasi untuk pagination
-        query.orderBy(JobTable.createdAt to SortOrder.DESC)
-            .limit(limit, offset.toLong())
-            .map { jobDAOToModel(JobDAO.wrapRow(it), baseUrl) }
+        // Execute query with conditions
+        val query = JobTable.selectAll()
+            .where { conditions.reduce { acc, cond -> acc and cond } }
+            .orderBy(JobTable.createdAt to SortOrder.DESC)
+
+        // Apply pagination using .offset() and .limit() (avoid deprecated two‑arg version)
+        val paginatedQuery = if (offset > 0) {
+            query.limit(limit).offset(offset.toLong())
+        } else {
+            query.limit(limit)
+        }
+
+        paginatedQuery.map { row ->
+            val dao = JobDAO.wrapRow(row)
+            jobDAOToModel(dao, baseUrl)
+        }
     }
 
     override suspend fun getById(jobId: String): Job? = suspendTransaction {
