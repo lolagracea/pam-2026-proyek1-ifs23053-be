@@ -28,6 +28,9 @@ class AuthService(
         // Ambil data request
         val request = call.receive<AuthRequest>()
 
+        // Trim password untuk menghilangkan spasi di awal/akhir
+        request.password = request.password.trim()
+
         // Validasi request
         val validator = ValidatorHelper(request.toMap())
         validator.required("name", "Nama tidak boleh kosong")
@@ -59,6 +62,9 @@ class AuthService(
     suspend fun postLogin(call: ApplicationCall) {
         // Ambil data request
         val request = call.receive<AuthRequest>()
+
+        // Trim password untuk menghilangkan spasi di awal/akhir
+        request.password = request.password.trim()
 
         // Validasi request
         val validator = ValidatorHelper(request.toMap())
