@@ -1,9 +1,8 @@
 package org.delcom.data
 
-import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
 import org.delcom.entities.Job
-import java.util.UUID
 
 @Serializable
 data class JobRequest(
@@ -13,20 +12,10 @@ data class JobRequest(
     var company: String = "",
     var location: String = "",
     var salary: String? = null,
-    var isActive: Boolean = true,
+    @SerialName("is_active") var isActive: Boolean = true,
     var logo: String? = null,
+    var urlLogo: String = ""
 ) {
-    fun toMap(): Map<String, Any?> {
-        return mapOf(
-            "title" to title,
-            "description" to description,
-            "company" to company,
-            "location" to location,
-            "salary" to salary,
-            "isActive" to isActive
-        )
-    }
-
     fun toEntity(): Job {
         return Job(
             userId = userId,
@@ -37,7 +26,19 @@ data class JobRequest(
             salary = salary,
             isActive = isActive,
             logo = logo,
-            updatedAt = Clock.System.now()
+            urlLogo = urlLogo,
+            // createdAt dan updatedAt akan diisi otomatis oleh default di entitas
         )
     }
+
+    fun toMap(): Map<String, Any?> = mapOf(
+        "title" to title,
+        "description" to description,
+        "company" to company,
+        "location" to location,
+        "salary" to salary,
+        "isActive" to isActive,
+        "logo" to logo,
+        "urlLogo" to urlLogo
+    )
 }

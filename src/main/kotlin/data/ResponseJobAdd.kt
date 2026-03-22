@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ResponseJobAdd(
-    val jobId: String
+    val jobId: String   // ← sebelumnya jobName, sekarang jobId
 )
