@@ -4,7 +4,6 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerialName
 import java.util.UUID
 
 @Serializable
@@ -16,7 +15,7 @@ data class Job(
     var company: String,
     var location: String,
     var salary: String? = null,
-    @SerialName("is_active") var isActive: Boolean = true,
+    var isActive: Boolean = true,  // tanpa @SerialName
     var logo: String? = null,
     var urlLogo: String = "",
     @Contextual

@@ -1,7 +1,6 @@
 package org.delcom.data
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerialName
 import org.delcom.entities.Job
 
 @Serializable
@@ -12,7 +11,7 @@ data class JobRequest(
     var company: String = "",
     var location: String = "",
     var salary: String? = null,
-    @SerialName("is_active") var isActive: Boolean = true,
+    var isActive: Boolean = true,  // tanpa @SerialName
     var logo: String? = null,
     var urlLogo: String = ""
 ) {
@@ -26,8 +25,7 @@ data class JobRequest(
             salary = salary,
             isActive = isActive,
             logo = logo,
-            urlLogo = urlLogo,
-            // createdAt dan updatedAt akan diisi otomatis oleh default di entitas
+            urlLogo = urlLogo
         )
     }
 
