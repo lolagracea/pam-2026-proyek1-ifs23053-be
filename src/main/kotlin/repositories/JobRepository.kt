@@ -25,47 +25,41 @@ class JobRepository(private val baseUrl: String) : IJobRepository {
         offset: Int,
         limit: Int
     ): List<Job> = suspendTransaction {
-        // Build dynamic conditions
-        val conditions = mutableListOf<Op<Boolean>>()
+        // Start with all rows
+        var query = JobTable.selectAll()
 
+        // Apply filters one by one using andWhere (safe even if none)
         if (userId != null) {
-            conditions.add(JobTable.userId eq UUID.fromString(userId))
+            query = query.andWhere { JobTable.userId eq UUID.fromString(userId) }
         }
         if (isActive != null) {
-            conditions.add(JobTable.isActive eq isActive)
+            query = query.andWhere { JobTable.isActive eq isActive }
         }
         if (!location.isNullOrBlank()) {
-            conditions.add(JobTable.location.lowerCase() like "%${location.lowercase()}%")
+            query = query.andWhere { JobTable.location.lowerCase() like "%${location.lowercase()}%" }
         }
         if (!company.isNullOrBlank()) {
-            conditions.add(JobTable.company.lowerCase() like "%${company.lowercase()}%")
+            query = query.andWhere { JobTable.company.lowerCase() like "%${company.lowercase()}%" }
         }
         if (search.isNotBlank()) {
             val keyword = "%${search.lowercase()}%"
-            conditions.add(
+            query = query.andWhere {
                 (JobTable.title.lowerCase() like keyword) or
                         (JobTable.company.lowerCase() like keyword) or
                         (JobTable.location.lowerCase() like keyword)
-            )
+            }
         }
 
-        // Execute query with conditions
-        val query = JobTable.selectAll()
-            .where { conditions.reduce { acc, cond -> acc and cond } }
-            .orderBy(JobTable.createdAt to SortOrder.DESC)
-
-        // Apply pagination using .offset() and .limit() (avoid deprecated two‑arg version)
-        val paginatedQuery = if (offset > 0) {
-            query.limit(limit).offset(offset.toLong())
-        } else {
-            query.limit(limit)
-        }
-
-        paginatedQuery.map { row ->
-            val dao = JobDAO.wrapRow(row)
-            jobDAOToModel(dao, baseUrl)
-        }
+        // Order and pagination
+        query.orderBy(JobTable.createdAt to SortOrder.DESC)
+            .limit(limit)
+            .offset(offset.toLong())
+            .map { row ->
+                val dao = JobDAO.wrapRow(row)
+                jobDAOToModel(dao, baseUrl)
+            }
     }
+
 
     override suspend fun getById(jobId: String): Job? = suspendTransaction {
         JobDAO.find { JobTable.id eq UUID.fromString(jobId) }
