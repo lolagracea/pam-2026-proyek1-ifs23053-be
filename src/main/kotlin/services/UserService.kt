@@ -38,6 +38,7 @@ class UserService(
                     id = user.id,
                     name = user.name,
                     username = user.username,
+                    bio = user.bio,                     // ← tambahkan bio
                     createdAt = user.createdAt,
                     updatedAt = user.updatedAt,
                 ),
@@ -57,6 +58,7 @@ class UserService(
         val validator = ValidatorHelper(request.toMap())
         validator.required("name", "Nama tidak boleh kosong")
         validator.required("username", "Username tidak boleh kosong")
+        // bio tidak wajib, jadi tidak divalidasi
         validator.validate()
 
         // periksa user dengan username
@@ -70,6 +72,7 @@ class UserService(
 
         user.username = request.username
         user.name = request.name
+        user.bio = request.bio                    // ← perbarui bio
         val isUpdated = userRepo.update(
             user.id,
             user
@@ -85,6 +88,7 @@ class UserService(
         )
         call.respond(response)
     }
+
 
     // mengubah photo profile
     suspend fun putMyPhoto(call: ApplicationCall) {

@@ -102,7 +102,7 @@ fun Application.module() {
                 explicitNulls = false
                 prettyPrint = true
                 ignoreUnknownKeys = true
-                encodeDefaults = true   // <-- tambahan agar field dengan nilai default ikut serialisasi
+                encodeDefaults = true   // <-- baris ini ditambahkan
             }
         )
     }
